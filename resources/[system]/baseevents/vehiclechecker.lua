@@ -4,10 +4,10 @@ local currentSeat = 0
 
 Citizen.CreateThread(function()
 	while true do
-		Citizen.Wait(0)
+		Citizen.Wait(50)
 
 		if(not isInVehicle and not IsPlayerDead(GetPlayerId())) then
-			if(IsCharInAnyCar(GetPlayerChar(-1))) then
+			if(IsCharSittingInAnyCar(GetPlayerChar(-1))) then
 				isInVehicle = true
 				currentVehicle = GetCarCharIsUsing(GetPlayerChar(-1))
 				currentSeat = GetPedVehicleSeat(GetPlayerChar(-1))
@@ -16,7 +16,7 @@ Citizen.CreateThread(function()
 				TriggerServerEvent('baseevents:enteredVehicle', currentVehicle, currentSeat, GetDisplayNameFromVehicleModel(GetCarModel(currentVehicle)))
 			end
 		elseif(isInVehicle) then
-			if(not IsCharInAnyCar(GetPlayerChar(-1)) or IsPlayerDead(GetPlayerId())) then
+			if(not IsCharSittingInAnyCar(GetPlayerChar(-1)) or IsPlayerDead(GetPlayerId())) then
 				TriggerEvent('baseevents:leftVehicle', currentVehicle, currentSeat, GetDisplayNameFromVehicleModel(GetCarModel(currentVehicle)))
 				TriggerServerEvent('baseevents:leftVehicle', currentVehicle, currentSeat, GetDisplayNameFromVehicleModel(GetCarModel(currentVehicle)))
 
@@ -25,19 +25,17 @@ Citizen.CreateThread(function()
 				currentSeat = 0
 			end
 		end
-
-		Citizen.Wait(50)
 	end
 end)
 
 function GetPedVehicleSeat(ped)
     local vehicle = GetCarCharIsUsing(ped)
 
-    for i = -2, GetMaximumNumberOfPassengers(vehicle) do
+	for i = -1, GetMaximumNumberOfPassengers(vehicle) do
         if(GetCharInCarPassengerSeat(vehicle, i) == ped) then
 			return i
 		end
     end
 	
-    return -2
+    return -1
 end

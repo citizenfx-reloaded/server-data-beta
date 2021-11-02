@@ -1,4 +1,5 @@
 local isInVehicle = false
+local isVehicleJacked = false
 local currentVehicle = 0
 local currentSeat = 0
 
@@ -6,21 +7,28 @@ Citizen.CreateThread(function()
 	while true do
 		Citizen.Wait(50)
 
-		if(not isInVehicle and not IsPlayerDead(GetPlayerId())) then
-			if(IsCharSittingInAnyCar(GetPlayerChar(-1))) then
-				isInVehicle = true
-				currentVehicle = GetCarCharIsUsing(GetPlayerChar(-1))
-				currentSeat = GetPedVehicleSeat(GetPlayerChar(-1))
+		local char = GetPlayerChar(-1)
 
-				TriggerEvent('baseevents:enteredVehicle', currentVehicle, currentSeat, GetDisplayNameFromVehicleModel(GetCarModel(currentVehicle)))
-				TriggerServerEvent('baseevents:enteredVehicle', currentVehicle, currentSeat, GetDisplayNameFromVehicleModel(GetCarModel(currentVehicle)))
+		if(not isInVehicle and not IsPlayerDead(GetPlayerId())) then
+			if(IsPedJacking(char)) then
+				isVehicleJacked = true
+			end
+
+			if(IsCharSittingInAnyCar(char)) then
+				isInVehicle = true
+				currentVehicle = GetCarCharIsUsing(char)
+				currentSeat = GetPedVehicleSeat(char)
+
+				TriggerEvent('baseevents:enteredVehicle', currentVehicle, currentSeat, GetDisplayNameFromVehicleModel(GetCarModel(currentVehicle)), isVehicleJacked)
+				TriggerServerEvent('baseevents:enteredVehicle', currentVehicle, currentSeat, GetDisplayNameFromVehicleModel(GetCarModel(currentVehicle)), isVehicleJacked)
 			end
 		elseif(isInVehicle) then
-			if(not IsCharSittingInAnyCar(GetPlayerChar(-1)) or IsPlayerDead(GetPlayerId())) then
-				TriggerEvent('baseevents:leftVehicle', currentVehicle, currentSeat, GetDisplayNameFromVehicleModel(GetCarModel(currentVehicle)))
-				TriggerServerEvent('baseevents:leftVehicle', currentVehicle, currentSeat, GetDisplayNameFromVehicleModel(GetCarModel(currentVehicle)))
+			if(not IsCharSittingInAnyCar(char) or IsPlayerDead(GetPlayerId())) then
+				TriggerEvent('baseevents:leftVehicle', currentVehicle, currentSeat, GetDisplayNameFromVehicleModel(GetCarModel(currentVehicle)), isVehicleJacked)
+				TriggerServerEvent('baseevents:leftVehicle', currentVehicle, currentSeat, GetDisplayNameFromVehicleModel(GetCarModel(currentVehicle)), isVehicleJacked)
 
 				isInVehicle = false
+				isVehicleJacked = false
 				currentVehicle = 0
 				currentSeat = 0
 			end
